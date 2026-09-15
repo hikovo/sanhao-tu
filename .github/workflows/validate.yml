@@ -1,0 +1,36 @@
+name: 三好兔版本检查
+run-name: 三好兔 ${{ github.ref_name }}
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install image dependency
+        run: python -m pip install "Pillow>=11,<13"
+
+      - name: Validate pet package
+        run: python scripts/validate_package.py
+
+      - name: Check shell installer syntax
+        run: sh -n install.sh
+
+      - name: Check PowerShell installer syntax
+        shell: pwsh
+        run: "[scriptblock]::Create((Get-Content -Raw ./install.ps1)) | Out-Null"
